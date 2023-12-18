@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 import styled from "styled-components";
 
@@ -35,18 +36,56 @@ const StyledPasswordInputGroup = styled.div`
 
 const Login = () => {
   const [show, setShow] = useState(false);
+  const [email, setemail] = useState("");
+  const [password, setpassword] = useState("");
+
+  const loginHandler = async (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_URL}/auth/login`,
+        {
+          email,
+          password,
+        }
+      );
+      const data = response.data;
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <StyledForm>
-      <StyledInput type="email" placeholder="Enter Your Email Address" />
+      <StyledInput
+        type="email"
+        onChange={(e) => setemail(e.target.value)}
+        placeholder="Enter Your Email Address"
+        required
+        name="email"
+      />
       <StyledPasswordInputGroup>
         <StyledInput
           type={show ? "text" : "password"}
           placeholder="Enter password"
+          onChange={(e) => setpassword(e.target.value)}
+          required
+          name="password"
         />
-        <button onClick={() => setShow(!show)}>{show ? "Hide" : "Show"}</button>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            setShow(!show);
+          }}
+        >
+          {show ? "Hide" : "Show"}
+        </button>
       </StyledPasswordInputGroup>
-      <StyledButton colorScheme="blue" type="submit">
+      <StyledButton onClick={loginHandler} colorScheme="blue" type="submit">
         Login
       </StyledButton>
       <StyledButton colorScheme="red">Get Guest User Credentials</StyledButton>

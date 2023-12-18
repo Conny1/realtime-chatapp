@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styled from "styled-components";
+import axios from "axios";
 
 type ButtonProps = {
   colorScheme: "blue" | "red";
@@ -35,16 +36,64 @@ const StyledPasswordInputGroup = styled.div`
 
 const Signup = () => {
   const [show, setShow] = useState(false);
+  const [email, setemail] = useState("");
+  const [password, setpassword] = useState("");
+  const [name, setname] = useState("");
+
+  const registerHandler = async (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_URL}/auth/register`,
+        {
+          name,
+          email,
+          password,
+        }
+      );
+      const data = response.data;
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <StyledForm>
-      <StyledInput type="email" placeholder="Enter Your Email Address" />
+      <StyledInput
+        type="name"
+        required
+        onChange={(e) => setname(e.target.value)}
+        placeholder="Enter Your Name"
+        name="name"
+      />
+      <StyledInput
+        type="email"
+        required
+        onChange={(e) => setemail(e.target.value)}
+        placeholder="Enter Your Email Address"
+        name="email"
+      />
       <StyledPasswordInputGroup>
         <StyledInput
           type={show ? "text" : "password"}
           placeholder="Enter password"
+          onChange={(e) => setpassword(e.target.value)}
+          required
+          name="password"
         />
-        <button onClick={() => setShow(!show)}>{show ? "Hide" : "Show"}</button>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+
+            setShow(!show);
+          }}
+        >
+          {show ? "Hide" : "Show"}
+        </button>
       </StyledPasswordInputGroup>
       {/* confirm password */}
       <StyledPasswordInputGroup>
@@ -52,12 +101,20 @@ const Signup = () => {
           type={show ? "text" : "password"}
           placeholder="Confirm password"
         />
-        <button onClick={() => setShow(!show)}>{show ? "Hide" : "Show"}</button>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+
+            setShow(!show);
+          }}
+        >
+          {show ? "Hide" : "Show"}
+        </button>
       </StyledPasswordInputGroup>
       <label htmlFor="upload">Upload picture</label>
       <StyledInput type="file" id="upload" placeholder="Upload picture" />
 
-      <StyledButton colorScheme="blue" type="submit">
+      <StyledButton onClick={registerHandler} colorScheme="blue" type="submit">
         Signup
       </StyledButton>
     </StyledForm>
