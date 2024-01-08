@@ -65,8 +65,18 @@ const AuthPage = () => {
         </Header>
         <Content>
           <Tabs>
-            <TabButton onClick={() => setlogin(true)}>Login</TabButton>
-            <TabButton onClick={() => setlogin(false)}>Sign Up</TabButton>
+            <TabButton
+              style={{ backgroundColor: `${login ? "#3182ce" : ""}` }}
+              onClick={() => setlogin(true)}
+            >
+              Login
+            </TabButton>
+            <TabButton
+              style={{ backgroundColor: `${!login ? "#3182ce" : ""}` }}
+              onClick={() => setlogin(false)}
+            >
+              Sign Up
+            </TabButton>
           </Tabs>
           {login ? <Login /> : <Signup />}
         </Content>

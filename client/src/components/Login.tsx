@@ -1,6 +1,9 @@
 import axios from "axios";
 import { useState } from "react";
 import styled from "styled-components";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 type ButtonProps = {
   colorScheme: "blue" | "red";
@@ -33,11 +36,17 @@ const StyledButton = styled.button<ButtonProps>`
 const StyledPasswordInputGroup = styled.div`
   display: flex;
 `;
+interface MyApiError {
+  response?: {
+    status?: number;
+  };
+}
 
 const Login = () => {
   const [show, setShow] = useState(false);
   const [email, setemail] = useState("");
   const [password, setpassword] = useState("");
+  const navigate = useNavigate();
 
   const loginHandler = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -53,14 +62,39 @@ const Login = () => {
         }
       );
       const data = response.data;
-      console.log(data);
+
+      if (data) {
+        toast("Log in succesful");
+        localStorage.setItem("userinfo", JSON.stringify(data));
+        setTimeout(() => {
+          navigate("/");
+        }, 3000);
+      }
     } catch (error) {
-      console.log(error);
+      const myApiError = error as MyApiError;
+
+      if (myApiError.response && myApiError.response.status) {
+        switch (myApiError.response.status) {
+          case 401:
+            toast("Invalid Username or password");
+            break;
+          case 404:
+            toast("User with that account does not exist");
+            break;
+          // Add more cases for other status codes if needed
+          default:
+            toast("Server error. Try again");
+        }
+      } else {
+        // Handle other types of errors or rethrow if needed
+        throw myApiError;
+      }
     }
   };
 
   return (
     <StyledForm>
+      <ToastContainer />
       <StyledInput
         type="email"
         onChange={(e) => setemail(e.target.value)}

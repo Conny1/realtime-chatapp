@@ -34,7 +34,7 @@ export const Login = async (req, resp, next) => {
   //   console.log(req.body);
   try {
     const data = await User.findOne({ email: req.body.email });
-    console.log(data);
+
     if (!data)
       return next(createError(404, "User with that account does not exist"));
     const isPassword = bcrypt.compareSync(req.body.password, data.password);

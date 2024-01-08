@@ -1,6 +1,8 @@
 import { useState } from "react";
 import styled from "styled-components";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 type ButtonProps = {
   colorScheme: "blue" | "red";
@@ -55,7 +57,9 @@ const Signup = () => {
         }
       );
       const data = response.data;
-      console.log(data);
+      if (data) {
+        toast("Account created Sucessfully.Now LogIn");
+      }
     } catch (error) {
       console.log(error);
     }
@@ -63,6 +67,7 @@ const Signup = () => {
 
   return (
     <StyledForm>
+      <ToastContainer />
       <StyledInput
         type="name"
         required
