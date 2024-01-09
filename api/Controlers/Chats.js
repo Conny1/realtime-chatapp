@@ -8,13 +8,18 @@ import User from "../models/User.js";
 //@access          Protected
 export const AccessChats = async (req, resp, next) => {
   //   console.log(req.user);
-  const { userid } = req.body;
+  const { userid, receiverid } = req.body;
   if (!userid) return next(createError(400, "userid not provided"));
 
   try {
     const isChat = await Chat.find({
       isgroupchat: false,
-      users: { $in: [userid] },
+
+      $and: [
+        { users: { $elemMatch: { $eq: userid } } },
+        { users: { $elemMatch: { $eq: receiverid } } },
+      ],
+
       // { $elemMatch: { $eq: req.user._id } },
     })
       .populate("users", "-password")
@@ -26,7 +31,7 @@ export const AccessChats = async (req, resp, next) => {
       var chatData = {
         chatname: "sender",
         isGroupChat: false,
-        users: [userid],
+        users: [userid, receiverid],
         // req.user._id, should be in array
       };
       const data = await Chat.create(chatData);
@@ -38,6 +43,7 @@ export const AccessChats = async (req, resp, next) => {
       resp.status(200).json(FullChat);
     }
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };
@@ -70,7 +76,7 @@ export const fetchChats = async (req, resp, next) => {
 
 export const getAllusers = async (req, resp, next) => {
   const term = req.query.term;
-  console.log(term);
+  // console.log(term);
 
   try {
     const users = await User.find(
@@ -85,7 +91,7 @@ export const getAllusers = async (req, resp, next) => {
     ).select("-password");
     // console.log(users);
     if (users.length === 0) return next(createError(404, "No users found"));
-    console.log(users);
+
     return resp.status(200).json(users);
   } catch (error) {
     next(error);

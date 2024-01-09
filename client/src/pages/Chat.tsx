@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { styled } from "styled-components";
 import Navbar from "../components/Navbar";
 import autimage from "../images/auth.jpg";
@@ -7,7 +7,7 @@ import Addgroup from "../components/AddGroupModal";
 import { useChatState } from "../state/state";
 import EachChat from "../components/EachChat";
 import axios from "axios";
-import { MyApiError } from "../state/types";
+import { Chats, MyApiError } from "../state/types";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -127,7 +127,7 @@ const Chatform = styled.form`
 const Chat = () => {
   const [profilemodal, setprofilemodal] = useState(false);
   const [addgroup, setaddgroup] = useState(false);
-  const { user, setchats } = useChatState();
+  const { user, setchats, chats, searchmodal } = useChatState();
   const [chatnotfound, setchatnotfound] = useState(false);
 
   useEffect(() => {
@@ -136,7 +136,7 @@ const Chat = () => {
         const resp = await axios.get(
           `${import.meta.env.VITE_URL}/chats/fetchchats/${user?._id}`
         );
-        console.log(resp.data);
+
         setchats(resp.data);
       } catch (error) {
         const ApiError = error as MyApiError;
@@ -157,7 +157,7 @@ const Chat = () => {
     if (user?._id) {
       fetchChats();
     }
-  }, [user]);
+  }, [user, setchats, searchmodal, addgroup]);
 
   return (
     <Maincontainer>
@@ -178,16 +178,16 @@ const Chat = () => {
             {chatnotfound ? (
               <button>
                 {" "}
-                {user
+                {chats
                   ? "No chat history. Search for users to Add"
                   : "Guest User"}{" "}
               </button>
             ) : (
               //  Each Chat
               <section>
-                <EachChat />
-                <EachChat />
-                <EachChat />
+                {chats?.map((chat: Chats) => {
+                  return <EachChat key={chat._id} {...chat} />;
+                })}
               </section>
             )}
           </ContactsContainer>
