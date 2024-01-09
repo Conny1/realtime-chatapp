@@ -1,9 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { styled } from "styled-components";
 import Navbar from "../components/Navbar";
 import autimage from "../images/auth.jpg";
 import Profile from "../components/Profile";
 import Addgroup from "../components/AddGroupModal";
+import { useChatState } from "../state/state";
+import EachChat from "../components/EachChat";
+import axios from "axios";
+import { MyApiError } from "../state/types";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Maincontainer = styled.div`
   background-image: url(${autimage});
@@ -65,6 +71,12 @@ const ContactsContainer = styled.div`
     background-color: #65cfcf;
     border: none;
   }
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
 `;
 const MessageContainer = styled.div`
   flex: 1;
@@ -115,12 +127,45 @@ const Chatform = styled.form`
 const Chat = () => {
   const [profilemodal, setprofilemodal] = useState(false);
   const [addgroup, setaddgroup] = useState(false);
+  const { user, setchats } = useChatState();
+  const [chatnotfound, setchatnotfound] = useState(false);
+
+  useEffect(() => {
+    const fetchChats = async () => {
+      try {
+        const resp = await axios.get(
+          `${import.meta.env.VITE_URL}/chats/fetchchats/${user?._id}`
+        );
+        console.log(resp.data);
+        setchats(resp.data);
+      } catch (error) {
+        const ApiError = error as MyApiError;
+        if (ApiError.response && ApiError.response.status) {
+          switch (ApiError.response.status) {
+            case 404:
+              setchatnotfound(true);
+              break;
+
+            default:
+              toast("Network Error Try again");
+              break;
+          }
+        }
+      }
+    };
+
+    if (user?._id) {
+      fetchChats();
+    }
+  }, [user]);
+
   return (
     <Maincontainer>
       <NavContainer>
         <Navbar />
       </NavContainer>
       <Container>
+        <ToastContainer />
         <ChatContainer>
           <MyChatsContainer>
             <h2>My Chats</h2>
@@ -130,13 +175,27 @@ const Chat = () => {
             {addgroup && <Addgroup setaddgroup={setaddgroup} />}
           </MyChatsContainer>
           <ContactsContainer>
-            <button>Guest Users</button>
+            {chatnotfound ? (
+              <button>
+                {" "}
+                {user
+                  ? "No chat history. Search for users to Add"
+                  : "Guest User"}{" "}
+              </button>
+            ) : (
+              //  Each Chat
+              <section>
+                <EachChat />
+                <EachChat />
+                <EachChat />
+              </section>
+            )}
           </ContactsContainer>
         </ChatContainer>
 
         <MessageContainer>
           <MessageHeader>
-            <h2>Guest User</h2>
+            <h2> {user ? user.name : "Guest User"} </h2>
             <button onClick={() => setprofilemodal(true)}>👁️</button>
           </MessageHeader>
           {/* profile Modal component */}

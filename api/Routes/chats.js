@@ -4,13 +4,16 @@ import {
   addgroup,
   creategroup,
   fetchChats,
+  getAllusers,
   removeFromgroup,
   renamegroup,
 } from "../Controlers/Chats.js";
 
 const Router = express.Router();
 
+Router.get("/getallusers", getAllusers);
 Router.post("/accesschats", AccessChats);
+
 Router.get("/fetchchats/:id", fetchChats);
 Router.post("/creategroup", creategroup);
 Router.put("/renamegroup/:id", renamegroup);

@@ -28,7 +28,7 @@ app.use((err, req, resp, next) => {
 });
 
 app.listen(process.env.PORT, async () => {
-  console.log("Connected to port" + process.env.PORT);
+  console.log("Connected to port " + process.env.PORT);
 
   await connect();
 });

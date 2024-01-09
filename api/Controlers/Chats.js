@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Chat from "../models/Chat.js";
 import { createError } from "../utils/err.js";
+import User from "../models/User.js";
 
 //@description     Create or fetch One to One Chat
 //@route           POST /chats/accesschats
@@ -58,6 +59,34 @@ export const fetchChats = async (req, resp, next) => {
     if (chats.length === 0) return next(createError(404, "No chats found"));
 
     return resp.status(200).json(chats);
+  } catch (error) {
+    next(error);
+  }
+};
+
+//@description      get all users chats
+//@route           GET /chats/getallusers
+//@access          Protected
+
+export const getAllusers = async (req, resp, next) => {
+  const term = req.query.term;
+  console.log(term);
+
+  try {
+    const users = await User.find(
+      term === ""
+        ? {}
+        : {
+            $or: [
+              { name: { $regex: term, $options: "i" } },
+              { email: { $regex: term, $options: "i" } },
+            ],
+          }
+    ).select("-password");
+    // console.log(users);
+    if (users.length === 0) return next(createError(404, "No users found"));
+    console.log(users);
+    return resp.status(200).json(users);
   } catch (error) {
     next(error);
   }
