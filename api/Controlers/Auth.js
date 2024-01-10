@@ -42,7 +42,7 @@ export const Login = async (req, resp, next) => {
       return next(createError(401, "invalid username or password"));
 
     const tokens = jwt.sign(
-      { id: data.id, admin: data.groupadmin },
+      { id: data.id, isadmin: data.groupadmin },
       process.env.CODE
     );
 
