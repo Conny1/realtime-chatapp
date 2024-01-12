@@ -10,6 +10,7 @@ import axios from "axios";
 import { Chats, MyApiError } from "../state/types";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const Maincontainer = styled.div`
   background-image: url(${autimage});
@@ -129,12 +130,20 @@ const Chat = () => {
   const [addgroup, setaddgroup] = useState(false);
   const { user, setchats, chats, searchmodal } = useChatState();
   const [chatnotfound, setchatnotfound] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const config = {
+      headers: {
+        "content-Type": "application/json",
+        authorization: `Bearer ${user?.tokens}`,
+      },
+    };
     const fetchChats = async () => {
       try {
         const resp = await axios.get(
-          `${import.meta.env.VITE_URL}/chats/fetchchats/${user?._id}`
+          `${import.meta.env.VITE_URL}/chats/fetchchats/${user?._id}`,
+          config
         );
 
         setchats(resp.data);
@@ -144,6 +153,15 @@ const Chat = () => {
           switch (ApiError.response.status) {
             case 404:
               setchatnotfound(true);
+              break;
+            case 400:
+              navigate("/auth");
+              break;
+            case 401:
+              navigate("/auth");
+              break;
+            case 403:
+              navigate("/auth");
               break;
 
             default:
@@ -157,7 +175,7 @@ const Chat = () => {
     if (user?._id) {
       fetchChats();
     }
-  }, [user, setchats, searchmodal, addgroup]);
+  }, [user, setchats, searchmodal, addgroup, navigate]);
 
   return (
     <Maincontainer>
