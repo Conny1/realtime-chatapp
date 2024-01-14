@@ -11,6 +11,7 @@ import { Chats, MyApiError } from "../state/types";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
+import MessagesChatsBox from "../components/MessagesChatsBox";
 
 const Maincontainer = styled.div`
   background-image: url(${autimage});
@@ -66,13 +67,9 @@ const MyChatsContainer = styled.div`
   }
 `;
 const ContactsContainer = styled.div`
-  button {
-    width: 100%;
-    height: 35px;
-    background-color: #65cfcf;
-    border: none;
-  }
-
+  /* outline: 1px solid red; */
+  height: 80vh;
+  overflow-y: scroll;
   section {
     display: flex;
     flex-direction: column;
@@ -82,7 +79,7 @@ const ContactsContainer = styled.div`
 const MessageContainer = styled.div`
   flex: 1;
   background-color: #fff;
-  min-height: 98vh;
+  height: 97vh;
   padding-left: 5px;
   padding-right: 5px;
 `;
@@ -108,7 +105,7 @@ const MessageHeader = styled.div`
 const MessagesChat = styled.div`
   background-color: gainsboro;
   height: 80vh;
-  overflow-y: scroll;
+  /* overflow-y: scroll; */
 `;
 const Chatform = styled.form`
   display: flex;
@@ -128,8 +125,11 @@ const Chatform = styled.form`
 const Chat = () => {
   const [profilemodal, setprofilemodal] = useState(false);
   const [addgroup, setaddgroup] = useState(false);
-  const { user, setchats, chats, searchmodal } = useChatState();
+  const { user, setchats, chats, searchmodal, setmessagesent, messagesent } =
+    useChatState();
   const [chatnotfound, setchatnotfound] = useState(false);
+  const [messagetosend, setmessagetosend] = useState("");
+  const [selectedChatId, setselectedChatId] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -175,7 +175,57 @@ const Chat = () => {
     if (user?._id) {
       fetchChats();
     }
-  }, [user, setchats, searchmodal, addgroup, navigate]);
+  }, [user, setchats, searchmodal, addgroup, navigate, messagesent]);
+
+  const SendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setmessagesent(false);
+    const config = {
+      headers: {
+        "content-Type": "application/json",
+        authorization: `Bearer ${user?.tokens}`,
+      },
+    };
+
+    const data = {
+      chatid: selectedChatId,
+      userid: user?._id,
+      content: messagetosend,
+    };
+    try {
+      const resp = await axios.post(
+        `${import.meta.env.VITE_URL}/messages/sendmessage`,
+        data,
+        config
+      );
+      if (resp.data) {
+        toast("Message Delivered");
+        setmessagetosend("");
+        setmessagesent(true);
+      }
+    } catch (error) {
+      const ApiError = error as MyApiError;
+      if (ApiError.response && ApiError.response.status) {
+        switch (ApiError.response.status) {
+          case 404:
+            break;
+          case 400:
+            navigate("/auth");
+            break;
+          case 401:
+            navigate("/auth");
+            break;
+          case 403:
+            navigate("/auth");
+            break;
+
+          default:
+            toast("Network Error Try again");
+            break;
+        }
+      }
+    }
+  };
 
   return (
     <Maincontainer>
@@ -204,7 +254,13 @@ const Chat = () => {
               //  Each Chat
               <section>
                 {chats?.map((chat: Chats) => {
-                  return <EachChat key={chat._id} {...chat} />;
+                  return (
+                    <EachChat
+                      key={chat._id}
+                      {...chat}
+                      setselectedChatId={setselectedChatId}
+                    />
+                  );
                 })}
               </section>
             )}
@@ -218,10 +274,17 @@ const Chat = () => {
           </MessageHeader>
           {/* profile Modal component */}
           {profilemodal && <Profile setprofilemodal={setprofilemodal} />}
-
-          <MessagesChat>hello</MessagesChat>
-          <Chatform>
-            <input type="text" placeholder="Send mesage" />
+          {/* chat box */}
+          <MessagesChat>
+            <MessagesChatsBox selectedChatId={selectedChatId} />
+          </MessagesChat>
+          <Chatform onSubmit={SendMessage}>
+            <input
+              onChange={(e) => setmessagetosend(e.target.value)}
+              type="text"
+              placeholder="Send message"
+              value={messagetosend}
+            />
             <input type="submit" value="Send" />
           </Chatform>
         </MessageContainer>
