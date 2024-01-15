@@ -12,6 +12,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import MessagesChatsBox from "../components/MessagesChatsBox";
+import { io } from "socket.io-client";
 
 const Maincontainer = styled.div`
   background-image: url(${autimage});
@@ -131,6 +132,14 @@ const Chat = () => {
   const [messagetosend, setmessagetosend] = useState("");
   const [selectedChatId, setselectedChatId] = useState("");
   const navigate = useNavigate();
+  const ENDPOINT = import.meta.env.VITE_URL;
+  var socket, selectedChatCompare;
+
+  useEffect(() => {
+    // connect socket io to backend
+    console.log(ENDPOINT);
+    socket = io(ENDPOINT);
+  }, []);
 
   useEffect(() => {
     const config = {
