@@ -12,7 +12,8 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import MessagesChatsBox from "../components/MessagesChatsBox";
-import { io } from "socket.io-client";
+import { Socket, io } from "socket.io-client";
+import { DefaultEventsMap } from "@socket.io/component-emitter";
 
 const Maincontainer = styled.div`
   background-image: url(${autimage});
@@ -126,20 +127,36 @@ const Chatform = styled.form`
 const Chat = () => {
   const [profilemodal, setprofilemodal] = useState(false);
   const [addgroup, setaddgroup] = useState(false);
-  const { user, setchats, chats, searchmodal, setmessagesent, messagesent } =
-    useChatState();
+  const {
+    user,
+    setchats,
+    chats,
+    searchmodal,
+    setmessagesent,
+    messagesent,
+    setsocketstate,
+    socketstate,
+  } = useChatState();
   const [chatnotfound, setchatnotfound] = useState(false);
   const [messagetosend, setmessagetosend] = useState("");
   const [selectedChatId, setselectedChatId] = useState("");
+  const [socketConnected, setsocketConnected] = useState(false);
+
   const navigate = useNavigate();
   const ENDPOINT = import.meta.env.VITE_URL;
-  var socket, selectedChatCompare;
 
   useEffect(() => {
+    const socket: Socket<DefaultEventsMap, DefaultEventsMap> = io(ENDPOINT);
     // connect socket io to backend
-    console.log(ENDPOINT);
-    socket = io(ENDPOINT);
-  }, []);
+
+    setsocketstate(socket);
+    if (user) {
+      console.log(user);
+      socket.emit("setup", user);
+      socket.on("connected", () => setsocketConnected(false));
+    }
+    console.log(socketConnected);
+  }, [user]);
 
   useEffect(() => {
     const config = {
@@ -211,8 +228,12 @@ const Chat = () => {
         toast("Message Delivered");
         setmessagetosend("");
         setmessagesent(true);
+        if (socketstate) {
+          socketstate.emit("newmessage", resp.data);
+        }
       }
     } catch (error) {
+      console.log(error);
       const ApiError = error as MyApiError;
       if (ApiError.response && ApiError.response.status) {
         switch (ApiError.response.status) {

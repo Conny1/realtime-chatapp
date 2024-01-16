@@ -10,7 +10,7 @@ import { Server } from "socket.io";
 dotenv.config();
 const app = express();
 // middlwares
-app.use(cors({ origin: "*" }));
+app.use(cors());
 app.use(express.json());
 
 // endpoints
@@ -40,12 +40,37 @@ const server = app.listen(process.env.PORT, async () => {
 
 const io = new Server(server, {
   pingTimeout: 60000,
-  allowRequest: (req, callback) => {
-    const noOriginHeader = req.headers.origin === undefined;
-    callback(null, noOriginHeader);
+  cors: {
+    origin: "*",
   },
 });
 
 io.on("connection", (socket) => {
   console.log("Server connected to socket.io");
+  // create ne room wit user_id
+  socket.on("setup", (userdata) => {
+    console.log(userdata._id);
+    socket.join(userdata._id);
+    socket.emit("connected");
+  });
+
+  // join chat
+  socket.on("joinchat", (roomid) => {
+    // console.log(roomid);
+    socket.join(roomid);
+    socket.emit("joinedchat");
+  });
+
+  // sendMessage
+  socket.on("newmessage", (newmassageReceived) => {
+    // console.log(newmassageReceived);
+    const chats = newmassageReceived.chat;
+    // console.log(chats);
+    if (!chats) return console.log("chats is undeifned");
+
+    chats.users.forEach((user) => {
+      if (newmassageReceived.sender._id === user) return;
+      socket.in(user).emit("messagereceived", newmassageReceived);
+    });
+  });
 });
