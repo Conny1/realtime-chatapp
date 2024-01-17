@@ -24,6 +24,7 @@ export const AccessChats = async (req, resp, next) => {
     })
       .populate("users", "-password")
       .populate("latestmessage");
+    // console.log(isChat);
 
     if (isChat.length > 0) {
       return resp.status(200).json(isChat);

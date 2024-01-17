@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import MessagesChatsBox from "../components/MessagesChatsBox";
 import { Socket, io } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
+import { mobileResopnsive } from "../utils/responsive";
 
 const Maincontainer = styled.div`
   background-image: url(${autimage});
@@ -23,6 +24,7 @@ const Maincontainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
 `;
 
 const NavContainer = styled.div`
@@ -42,6 +44,11 @@ const Container = styled.div`
   display: flex;
   gap: 10px;
   align-items: center;
+  outline: 1px solid red;
+  ${mobileResopnsive({
+    justifyContent: "center",
+    gap: 0,
+  })}
 `;
 
 const ChatContainer = styled.div`
@@ -50,6 +57,25 @@ const ChatContainer = styled.div`
   background-color: #fff;
   min-height: 96vh;
   padding: 5px;
+  outline: 1px solid red;
+  ${mobileResopnsive({
+    display: "none",
+  })}
+`;
+
+const ResponsiveChatContainer = styled.div`
+  position: absolute;
+  display: none;
+  left: 0;
+  width: 90%;
+  max-width: 500px;
+  background-color: #fff;
+  min-height: 96vh;
+  padding: 5px;
+  outline: 1px solid red;
+  ${mobileResopnsive({
+    display: "block",
+  })}
 `;
 
 const MyChatsContainer = styled.div`
@@ -57,7 +83,8 @@ const MyChatsContainer = styled.div`
   justify-content: space-between;
   align-items: center;
   h2 {
-    font-weight: 400;
+    font-weight: 500;
+    font-size: 18px;
   }
   button {
     border: none;
@@ -84,6 +111,8 @@ const MessageContainer = styled.div`
   height: 97vh;
   padding-left: 5px;
   padding-right: 5px;
+  outline: 1px solid red;
+  /* ${mobileResopnsive({})} */
 `;
 
 const MessageHeader = styled.div`
@@ -91,8 +120,21 @@ const MessageHeader = styled.div`
   justify-content: space-between;
   align-items: center;
 
+  span {
+    background-color: gainsboro;
+    padding: 5px;
+    outline: 1px solid gray;
+    cursor: pointer;
+    display: none;
+    ${mobileResopnsive({
+      display: "block",
+      width: "fit-content",
+    })}
+  }
+
   h2 {
-    font-weight: 400;
+    font-weight: 500;
+    font-size: 20px;
   }
   button {
     border: none;
@@ -136,11 +178,13 @@ const Chat = () => {
     messagesent,
     setsocketstate,
     socketstate,
+    selectedChats,
   } = useChatState();
   const [chatnotfound, setchatnotfound] = useState(false);
   const [messagetosend, setmessagetosend] = useState("");
   const [selectedChatId, setselectedChatId] = useState("");
   const [socketConnected, setsocketConnected] = useState(false);
+  const [chatsModal, setchatsModal] = useState(false);
 
   const navigate = useNavigate();
   const ENDPOINT = import.meta.env.VITE_URL;
@@ -151,7 +195,7 @@ const Chat = () => {
 
     setsocketstate(socket);
     if (user) {
-      console.log(user);
+      // console.log(user);
       socket.emit("setup", user);
       socket.on("connected", () => setsocketConnected(false));
     }
@@ -282,6 +326,7 @@ const Chat = () => {
               </button>
             ) : (
               //  Each Chat
+
               <section>
                 {chats?.map((chat: Chats) => {
                   return (
@@ -296,10 +341,56 @@ const Chat = () => {
             )}
           </ContactsContainer>
         </ChatContainer>
+        {/* responsive chats container */}
+        {chatsModal && (
+          <ResponsiveChatContainer>
+            <MyChatsContainer>
+              <h2>My Chats</h2>
+
+              <button onClick={() => setaddgroup(true)}>
+                New Group Chat +
+              </button>
+              {/* AddGroup modal component */}
+              {addgroup && <Addgroup setaddgroup={setaddgroup} />}
+            </MyChatsContainer>
+            {chatnotfound ? (
+              <button>
+                {chats
+                  ? "No chat history. Search for users to Add"
+                  : "Guest User"}{" "}
+              </button>
+            ) : (
+              //  Each Chat
+              <>
+                <section>
+                  {chats?.map((chat: Chats) => {
+                    return (
+                      <EachChat
+                        key={chat._id}
+                        {...chat}
+                        setselectedChatId={setselectedChatId}
+                      />
+                    );
+                  })}
+                </section>
+                <button onClick={() => setchatsModal(false)}>close</button>
+              </>
+            )}
+          </ResponsiveChatContainer>
+        )}
 
         <MessageContainer>
           <MessageHeader>
-            <h2> {user ? user.name : "Guest User"} </h2>
+            <span onClick={() => setchatsModal(true)}>chats</span>{" "}
+            <h2>
+              {selectedChats
+                ? selectedChats.isgroupchat
+                  ? selectedChats.chatname
+                  : selectedChats.users.map((item) =>
+                      user?._id !== item._id ? item.name : ""
+                    )
+                : "no chats selected"}{" "}
+            </h2>
             <button onClick={() => setprofilemodal(true)}>👁️</button>
           </MessageHeader>
           {/* profile Modal component */}
@@ -308,15 +399,17 @@ const Chat = () => {
           <MessagesChat>
             <MessagesChatsBox selectedChatId={selectedChatId} />
           </MessagesChat>
-          <Chatform onSubmit={SendMessage}>
-            <input
-              onChange={(e) => setmessagetosend(e.target.value)}
-              type="text"
-              placeholder="Send message"
-              value={messagetosend}
-            />
-            <input type="submit" value="Send" />
-          </Chatform>
+          {selectedChatId && (
+            <Chatform onSubmit={SendMessage}>
+              <input
+                onChange={(e) => setmessagetosend(e.target.value)}
+                type="text"
+                placeholder="Send message"
+                value={messagetosend}
+              />
+              <input type="submit" value="Send" />
+            </Chatform>
+          )}
         </MessageContainer>
       </Container>
     </Maincontainer>
