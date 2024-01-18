@@ -63,13 +63,13 @@ io.on("connection", (socket) => {
 
   // sendMessage
   socket.on("newmessage", (newmassageReceived) => {
-    // console.log(newmassageReceived);
     const chats = newmassageReceived.chat;
     // console.log(chats);
     if (!chats) return console.log("chats is undeifned");
 
     chats.users.forEach((user) => {
       if (newmassageReceived.sender._id === user) return;
+
       socket.in(user).emit("messagereceived", newmassageReceived);
     });
   });

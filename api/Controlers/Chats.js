@@ -8,8 +8,15 @@ import User from "../models/User.js";
 //@access          Protected
 export const AccessChats = async (req, resp, next) => {
   //   console.log(req.user);
-  const { userid, receiverid } = req.body;
+  const { userid, receiverid, groupid, isgroupchat } = req.body;
   if (!userid) return next(createError(400, "userid not provided"));
+  if (isgroupchat) {
+    const isChat = await Chat.findById(groupid)
+      .populate("users", "-password")
+      .populate("latestmessage");
+
+    return resp.status(200).json([isChat]);
+  }
 
   try {
     const isChat = await Chat.find({

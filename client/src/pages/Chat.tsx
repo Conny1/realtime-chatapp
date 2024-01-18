@@ -73,9 +73,10 @@ const ResponsiveChatContainer = styled.div`
   min-height: 96vh;
   padding: 5px;
   outline: 1px solid red;
+  z-index: 999;
   ${mobileResopnsive({
     display: "block",
-  })}
+  })};
 `;
 
 const MyChatsContainer = styled.div`
@@ -191,7 +192,6 @@ const Chat = () => {
 
   useEffect(() => {
     const socket: Socket<DefaultEventsMap, DefaultEventsMap> = io(ENDPOINT);
-    // connect socket io to backend
 
     setsocketstate(socket);
     if (user) {
