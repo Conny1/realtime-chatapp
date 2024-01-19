@@ -49,7 +49,7 @@ io.on("connection", (socket) => {
   console.log("Server connected to socket.io");
   // create ne room wit user_id
   socket.on("setup", (userdata) => {
-    console.log(userdata._id);
+    // console.log(userdata._id);
     socket.join(userdata._id);
     socket.emit("connected");
   });

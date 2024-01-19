@@ -41,11 +41,14 @@ const Signup = () => {
   const [email, setemail] = useState("");
   const [password, setpassword] = useState("");
   const [name, setname] = useState("");
+  const [confirm, setconfirm] = useState("");
 
   const registerHandler = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     e.preventDefault();
+    if (!name || !password || !email) return toast("Proveide all details");
+    if (confirm !== password) return toast("Passwords do not match");
 
     try {
       const response = await axios.post(
@@ -103,18 +106,10 @@ const Signup = () => {
       {/* confirm password */}
       <StyledPasswordInputGroup>
         <StyledInput
+          onChange={(e) => setconfirm(e.target.value)}
           type={show ? "text" : "password"}
           placeholder="Confirm password"
         />
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-
-            setShow(!show);
-          }}
-        >
-          {show ? "Hide" : "Show"}
-        </button>
       </StyledPasswordInputGroup>
       <label htmlFor="upload">Upload picture</label>
       <StyledInput type="file" id="upload" placeholder="Upload picture" />

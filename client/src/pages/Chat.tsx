@@ -44,7 +44,7 @@ const Container = styled.div`
   display: flex;
   gap: 10px;
   align-items: center;
-  outline: 1px solid red;
+  /* outline: 1px solid red; */
   ${mobileResopnsive({
     justifyContent: "center",
     gap: 0,
@@ -57,7 +57,7 @@ const ChatContainer = styled.div`
   background-color: #fff;
   min-height: 96vh;
   padding: 5px;
-  outline: 1px solid red;
+  /* outline: 1px solid red; */
   ${mobileResopnsive({
     display: "none",
   })}
@@ -112,7 +112,7 @@ const MessageContainer = styled.div`
   height: 97vh;
   padding-left: 5px;
   padding-right: 5px;
-  outline: 1px solid red;
+  /* outline: 1px solid red; */
   /* ${mobileResopnsive({})} */
 `;
 
