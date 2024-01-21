@@ -4,7 +4,7 @@ import cors from "cors";
 import connect from "./utils/db.js";
 import AuthRoute from "./Routes/Auth.js";
 import ChatsRoute from "./Routes/chats.js";
-import messagesRoute from "./Routes/Messages.js";
+import MessagesRoute from "./Routes/Messages.js";
 import { Server } from "socket.io";
 
 dotenv.config();
@@ -16,7 +16,7 @@ app.use(express.json());
 // endpoints
 app.use("/auth", AuthRoute);
 app.use("/chats", ChatsRoute);
-app.use("/messages", messagesRoute);
+app.use("/messages", MessagesRoute);
 
 app.use((err, req, resp, next) => {
   const status = err.status || 500;
