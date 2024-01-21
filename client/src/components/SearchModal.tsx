@@ -70,6 +70,7 @@ const Search = ({ setsearchmodal }: Props) => {
   const [usernotfound, setusernotfound] = useState(false);
   const [term, setterm] = useState("");
   const { user } = useChatState();
+
   const navigate = useNavigate();
 
   useEffect(() => {

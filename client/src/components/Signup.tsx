@@ -42,13 +42,21 @@ const Signup = () => {
   const [password, setpassword] = useState("");
   const [name, setname] = useState("");
   const [confirm, setconfirm] = useState("");
+  const [loading, setloading] = useState(false);
 
   const registerHandler = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     e.preventDefault();
-    if (!name || !password || !email) return toast("Proveide all details");
-    if (confirm !== password) return toast("Passwords do not match");
+    setloading(true);
+    if (!name || !password || !email) {
+      setloading(false);
+      return toast("Proveide all details");
+    }
+    if (confirm !== password) {
+      setloading(false);
+      return toast("Passwords do not match");
+    }
 
     try {
       const response = await axios.post(
@@ -61,6 +69,7 @@ const Signup = () => {
       );
       const data = response.data;
       if (data) {
+        setloading(false);
         toast("Account created Sucessfully.Now LogIn");
       }
     } catch (error) {
@@ -114,9 +123,17 @@ const Signup = () => {
       <label htmlFor="upload">Upload picture</label>
       <StyledInput type="file" id="upload" placeholder="Upload picture" />
 
-      <StyledButton onClick={registerHandler} colorScheme="blue" type="submit">
-        Signup
-      </StyledButton>
+      {loading ? (
+        <StyledButton colorScheme="red">Loading...</StyledButton>
+      ) : (
+        <StyledButton
+          onClick={registerHandler}
+          colorScheme="blue"
+          type="submit"
+        >
+          Signup
+        </StyledButton>
+      )}
     </StyledForm>
   );
 };
