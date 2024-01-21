@@ -217,6 +217,7 @@ const Chat = () => {
         );
 
         setchats(resp.data);
+        console.log(resp.data);
       } catch (error) {
         const ApiError = error as MyApiError;
         if (ApiError.response && ApiError.response.status) {
